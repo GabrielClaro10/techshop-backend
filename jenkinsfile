@@ -1,12 +1,12 @@
 pipeline {
     agent any
 
-    stages{
-        stage ('Build Image'){
+    stages {
+        stage('Build Image') {
             steps {
-              script {
-                dockerapp = docker.build("gabriel/techshop-backend", '-f ./src/Dockerfile ./src') 
-              }
+                script {
+                    def dockerapp = docker.build("gabriel/techshop-backend", "-f src/Dockerfile src")
+                }
             }
         }
     }
