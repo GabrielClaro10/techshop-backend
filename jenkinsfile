@@ -4,7 +4,7 @@ pipeline {
     stages{
         stage ('Inicial'){
             steps {
-                echo 'OLA MUNDO'
+                echo 'OLA MUNDOO'
             }
         }
     }
