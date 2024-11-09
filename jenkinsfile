@@ -4,7 +4,9 @@ pipeline {
     stages{
         stage ('Build Image'){
             steps {
-                echo 'OLA MUNDOO'
+              script {
+                dockerapp = docker.build("gabriel/techshop-backend", '-f ./src/Dockerfile ./src') 
+              }
             }
         }
     }
