@@ -9,14 +9,20 @@ WORKDIR /app
 # Copia o arquivo pubspec.* necessário para instalar dependências
 COPY pubspec.* ./
 
-# Define o usuário flutteruser para as próximas etapas
-USER flutteruser
-
 # Adiciona a exceção de segurança do Git para o diretório do Flutter
 RUN git config --global --add safe.directory /sdks/flutter
 
-# Ajusta as permissões do diretório de cache do Flutter sem usar sudo
+# Torna-se root temporariamente para ajustar permissões
+USER root
+
+# Verifica a estrutura de diretórios (ajuste conforme necessário)
+RUN ls -al /sdks/flutter/bin/cache
+
+# Ajusta as permissões do diretório de cache do Flutter
 RUN chown -R flutteruser:flutteruser /sdks/flutter/bin/cache
+
+# Volta para o usuário flutteruser para continuar o build
+USER flutteruser
 
 # Executa o comando flutter pub get para instalar as dependências
 RUN flutter pub get
