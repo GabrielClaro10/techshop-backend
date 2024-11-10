@@ -1,71 +1,62 @@
 pipeline {
     agent any
-
+    
     environment {
-        DOCKER_IMAGE = 'techshop/webapp'
-        DEPLOY_SERVER = 'user@your-server:/path/to/deploy'
+        DOCKER_IMAGE = 'gabriel/techshop-backend'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/GabrielClaro10/TechShop.git'
+                git branch: 'main', url: 'https://github.com/GabrielClaro10/techshop-backend.git'
             }
         }
-
-        stage('Build') {
+        
+        stage('Install Dependencies') {
             steps {
                 script {
-                    sh 'composer install --no-interaction'
+                    sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
                     sh 'npm install'
-                    sh 'npm run production'
                 }
             }
         }
 
-        stage('Testes Unitários') {
+        stage('Run Unit Tests') {
             steps {
-                script {
-                    sh 'vendor/bin/phpunit --configuration phpunit.xml'
-                }
+                sh 'php artisan test --parallel'
             }
         }
 
-        stage('Testes de Integração') {
+        stage('Build Docker Image') {
             steps {
-                script {
-                    sh './vendor/bin/phpunit --configuration phpunit.integration.xml'
-                }
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
 
-        stage('Docker Build') {
+        stage('Push Docker Image') {
             steps {
-                script {
-                    sh 'docker build -t $DOCKER_IMAGE .'
+                withDockerRegistry([ credentialsId: 'docker-hub-credentials', url: '' ]) {
+                    sh "docker push ${DOCKER_IMAGE}"
                 }
             }
         }
 
         stage('Deploy') {
             steps {
-                script {
-                    sh "scp -r . $DEPLOY_SERVER"
-                    sshagent(['deploy-ssh-key']) {
-                        sh "ssh $DEPLOY_SERVER 'cd /path/to/deploy && ./deploy.sh'"
-                    }
-                }
+                sh "docker run -d --name techshop-app -p 8000:8000 ${DOCKER_IMAGE}"
             }
         }
     }
 
     post {
-        success {
-            echo 'Pipeline executado com sucesso!'
+        always {
+            echo 'CI/CD pipeline finished.'
         }
-
+        success {
+            echo 'Build and deploy succeeded!'
+        }
         failure {
-            echo 'Pipeline falhou.'
+            echo 'Build failed!'
         }
     }
 }
