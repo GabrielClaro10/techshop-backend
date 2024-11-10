@@ -1,14 +1,71 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = 'techshop/webapp'
+        DEPLOY_SERVER = 'user@your-server:/path/to/deploy'
+    }
+
     stages {
-        stage('Build Image') {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/GabrielClaro10/TechShop.git'
+            }
+        }
+
+        stage('Build') {
             steps {
                 script {
-                    bat 'docker build -t "gabriel/techshop-backend" -f "C:\\Users\\Gabriel Claro\\techshop-backend\\vendor\\laravel\\sail\\runtimes\\8.0\\Dockerfile" .'
+                    sh 'composer install --no-interaction'
+                    sh 'npm install'
+                    sh 'npm run production'
+                }
+            }
+        }
+
+        stage('Testes Unitários') {
+            steps {
+                script {
+                    sh 'vendor/bin/phpunit --configuration phpunit.xml'
+                }
+            }
+        }
+
+        stage('Testes de Integração') {
+            steps {
+                script {
+                    sh './vendor/bin/phpunit --configuration phpunit.integration.xml'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    sh 'docker build -t $DOCKER_IMAGE .'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh "scp -r . $DEPLOY_SERVER"
+                    sshagent(['deploy-ssh-key']) {
+                        sh "ssh $DEPLOY_SERVER 'cd /path/to/deploy && ./deploy.sh'"
+                    }
                 }
             }
         }
     }
-}
 
+    post {
+        success {
+            echo 'Pipeline executado com sucesso!'
+        }
+
+        failure {
+            echo 'Pipeline falhou.'
+        }
+    }
+}
