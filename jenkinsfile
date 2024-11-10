@@ -5,6 +5,7 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
+                    sh 'ls -l' // Lista os arquivos e diretórios
                     docker.build("gabriel/techshop-backend", '-f ./app/Dockerfile .')
                 }
             }
