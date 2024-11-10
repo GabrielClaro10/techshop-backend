@@ -8,7 +8,7 @@ RUN flutter pub get
 
 COPY . .
 
-RUN flutter build web
+RUN flutter build web --release
 
 EXPOSE 8080
 
