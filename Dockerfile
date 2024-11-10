@@ -8,6 +8,8 @@ COPY pubspec.* ./
 
 USER flutteruser
 
+RUN git config --global --add safe.directory /sdks/flutter
+
 RUN flutter pub get
 
 COPY . .
