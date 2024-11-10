@@ -15,8 +15,8 @@ USER flutteruser
 # Adiciona a exceção de segurança do Git para o diretório do Flutter
 RUN git config --global --add safe.directory /sdks/flutter
 
-# Executa o Flutter Doctor para garantir que o ambiente esteja correto
-RUN flutter doctor
+# Ajusta as permissões do diretório de cache do Flutter
+RUN sudo chown -R flutteruser:flutteruser /sdks/flutter/bin/cache
 
 # Executa o comando flutter pub get para instalar as dependências
 RUN flutter pub get
