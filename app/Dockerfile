@@ -1,21 +1,25 @@
-# Imagem base com PHP
+# Use a imagem oficial do PHP com Apache
 FROM php:8.1-apache
 
-# Define o diretório de trabalho
+# Define o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copia os arquivos de configuração do projeto (como composer.json, se estiver usando Composer)
-COPY composer.json ./
+# Copia o arquivo composer.json e composer.lock da raiz do projeto para o container
+COPY composer.json composer.lock ./
 
-# Instala as dependências com o Composer, caso necessário
-RUN apt-get update && apt-get install -y git unzip \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && composer install
+# Instala o Composer
+RUN apt-get update && \
+    apt-get install -y zip unzip && \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+    composer install --no-scripts --no-autoloader
 
-# Copia os arquivos do projeto para a imagem
+# Copia todos os arquivos do projeto para o container
 COPY . .
 
-# Expõe a porta 80 para acesso HTTP
+# Roda o autoload do Composer
+RUN composer dump-autoload --optimize
+
+# Exponha a porta 80 (HTTP)
 EXPOSE 8080
 
 # Comando para iniciar o servidor Apache
