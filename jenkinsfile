@@ -5,7 +5,7 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    dockerapp = docker.build("gabriel/techshop-backend", "-f vendor/laravel/sail/runtimes/8.0/Dockerfile .")
+                    bat 'docker build -t "gabriel/techshop-backend" -f vendor/laravel/sail/runtimes/8.0/Dockerfile .'
                 }
             }
         }
