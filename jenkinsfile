@@ -1,62 +1,14 @@
 pipeline {
     agent any
-    
-    environment {
-        DOCKER_IMAGE = 'gabriel/techshop-backend'
-    }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/GabrielClaro10/techshop-backend.git'
-            }
-        }
-        
-        stage('Install Dependencies') {
+        stage('Build Image') {
             steps {
                 script {
-                    bat 'composer install --no-interaction --prefer-dist --optimize-autoloader'
-                    bat 'npm install'
+                    dockerapp = docker build ("gabrielclaro/techshop-backend", '-f ./Dockerfile')
                 }
             }
-        }
-
-        stage('Run Unit Tests') {
-            steps {
-                bat 'php artisan test --parallel'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                bat "docker build -t ${DOCKER_IMAGE} ."
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                withDockerRegistry([ credentialsId: 'docker-hub-credentials', url: '' ]) {
-                    bat "docker push ${DOCKER_IMAGE}"
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                bat "docker run -d --name techshop-app -p 8000:8000 ${DOCKER_IMAGE}"
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'CI/CD pipeline finished.'
-        }
-        success {
-            echo 'Build and deploy succeeded!'
-        }
-        failure {
-            echo 'Build failed!'
         }
     }
 }
+
