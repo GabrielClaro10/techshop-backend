@@ -10,6 +10,10 @@ USER flutteruser
 
 RUN git config --global --add safe.directory /sdks/flutter
 
+USER root
+RUN chown -R flutteruser:flutteruser /sdks/flutter/bin/cache
+USER flutteruser
+
 RUN flutter pub get
 
 COPY . .
