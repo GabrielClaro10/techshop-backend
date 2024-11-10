@@ -12,17 +12,11 @@ COPY pubspec.* ./
 # Adiciona a exceção de segurança do Git para o diretório do Flutter
 RUN git config --global --add safe.directory /sdks/flutter
 
-# Torna-se root temporariamente para ajustar permissões
-USER root
+# Ajusta permissões do diretório do Flutter
+RUN chown -R flutteruser:flutteruser /sdks/flutter
 
-# Verifica a estrutura de diretórios (ajuste conforme necessário)
-RUN ls -al /sdks/flutter/bin/cache
-
-# Ajusta as permissões do diretório de cache do Flutter
-RUN chown -R flutteruser:flutteruser /sdks/flutter/bin/cache
-
-# Volta para o usuário flutteruser para continuar o build
-USER flutteruser
+# Limpa o cache do Flutter (opcional, se houver problemas de cache)
+RUN flutter clean
 
 # Executa o comando flutter pub get para instalar as dependências
 RUN flutter pub get
