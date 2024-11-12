@@ -4,7 +4,14 @@ pipeline {
     stages {
         stage('Build Image') {
             steps {
-                echo 'Iniciando a pipeline'
+                script {
+                   
+                    def imageName = 'techshop-immagem'
+
+                    bat "docker build -t ${imageName} ."
+
+                    bat 'docker images'
+                }
             }
         }
     }
