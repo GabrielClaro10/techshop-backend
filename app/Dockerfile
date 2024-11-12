@@ -5,7 +5,7 @@ FROM php:8.1-apache
 WORKDIR /app
 
 # Copia os arquivos de configuração do projeto (como composer.json, se estiver usando Composer)
-COPY composer.json ./
+COPY ../composer.json ./
 
 # Instala as dependências com o Composer, caso necessário
 RUN apt-get update && apt-get install -y git unzip \
