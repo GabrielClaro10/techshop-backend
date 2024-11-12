@@ -5,11 +5,10 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                   
-                    def imageName = 'techshop-immagem'
+                    def dockerfilePath = 'C:/Users/Gabriel Claro/techshop-backend/app'
 
-                    bat "docker build -t ${imageName} ."
-
+                    bat "docker build -t techshop-immagem ${dockerfilePath}"
+                    
                     bat 'docker images'
                 }
             }
