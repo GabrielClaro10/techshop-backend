@@ -4,9 +4,7 @@ pipeline {
     stages {
         stage('Build Image') {
             steps {
-                script {
-                    bat 'dir' 
-                    docker.build("gabriel/techshop-backend", '-f ./app/Dockerfile .')
+                echo 'Iniciando a pipeline'
                 }
             }
         }
