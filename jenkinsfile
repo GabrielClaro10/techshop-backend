@@ -8,8 +8,8 @@ pipeline {
                     // Caminho correto do Dockerfile no seu sistema
                     def dockerfilePath = 'C:/Users/Gabriel Claro/techshop-backend/app'
 
-                    // Comando para construir a imagem Docker com o caminho correto para o Dockerfile
-                    bat "docker build -t techshop-immagem ${dockerfilePath}"
+                    // Usar docker build e passar o caminho corretamente
+                    bat "docker build -t techshop-immagem ${dockerfilePath} --file ${dockerfilePath}/Dockerfile"
                     
                     // (Opcional) Listar as imagens Docker para verificação
                     bat 'docker images'
