@@ -5,9 +5,13 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
+                    // Caminho correto do Dockerfile no seu sistema
+                    def dockerfilePath = 'C:/Users/Gabriel Claro/techshop-backend/app'
 
+                    // Comando para construir a imagem Docker com o caminho correto para o Dockerfile
                     bat "docker build -t techshop-immagem ${dockerfilePath}"
                     
+                    // (Opcional) Listar as imagens Docker para verificação
                     bat 'docker images'
                 }
             }
