@@ -5,7 +5,7 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    dockerapp = docker.build("gabriel/techshop", '-f ./app/Dockerfile ./app')
+                   dockerapp = docker.build("gabriel/techshop", '-f app/Dockerfile .')
                 }
             }
         }
