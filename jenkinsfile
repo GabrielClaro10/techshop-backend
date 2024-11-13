@@ -5,8 +5,8 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    // Construir a imagem Docker sem cache
-                    dockerapp = docker.build("gabriel/techshop:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
+                    // Construir a imagem Docker sem cache, usando o seu nome de usuário no Docker Hub
+                    dockerapp = docker.build("gabriel924/techshop:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
                 }
             }
         }
@@ -15,16 +15,16 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerid', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
                     script {
-                        def registry_url = "docker.io"
-                        
-                        // Login no Docker Hub
+                        def registry_url = "docker.io" // URL do Docker Hub
+
+                        // Login no Docker Hub com as credenciais
                         bat "docker login -u %USER% -p %PASSWORD% ${registry_url}"
 
-                        // Usar o docker.withRegistry para fazer push
+                        // Usar o docker.withRegistry para fazer push da imagem
                         docker.withRegistry("https://${registry_url}", "dockerid") {
                             // Push da imagem para o Docker Hub
-                            dockerapp.push("latest")
-                            dockerapp.push("${env.BUILD_ID}")
+                            dockerapp.push("latest") // Envia a imagem com a tag "latest"
+                            dockerapp.push("${env.BUILD_ID}") // Envia a imagem com o ID da construção como tag
                         }
                     }
                 }
