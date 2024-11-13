@@ -11,7 +11,5 @@ pipeline {
         }
       }
     }
-
-    // Outras etapas podem ser adicionadas conforme necessário
   }
 }
