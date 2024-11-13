@@ -11,15 +11,24 @@ pipeline {
             }
         }
 
-        stage('Push image') {
-           withCredentials([usernamePassword( credentialsId: 'dockerid', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
-        def registry_url = "registry.hub.docker.com/"
-        bat "docker login -u $USER -p $PASSWORD ${registry_url}"
-        docker.withRegistry("http://${registry_url}", "docker-hub-credentials") {
-            // Push your image now
-            bat "docker push username/foldername:build"
+        stage('Push Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerid', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
+                    script {
+                        def registry_url = "docker.io"
+                        
+                        // Login no Docker Hub
+                        bat "docker login -u %USER% -p %PASSWORD% ${registry_url}"
+
+                        // Usar o docker.withRegistry para fazer push
+                        docker.withRegistry("https://${registry_url}", "dockerid") {
+                            // Push da imagem para o Docker Hub
+                            dockerapp.push("latest")
+                            dockerapp.push("${env.BUILD_ID}")
+                        }
+                    }
+                }
+            }
         }
-    }
-}
     }
 }
