@@ -5,17 +5,24 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                   dockerapp = docker.build("gabriel/techshop:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
+                    dockerapp = docker.build("gabriel/techshop:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
                 }
             }
         }
 
-        stage('Push Image'){
+        stage('Push Image') {
             steps {
-                script{
-                    docker.withRegistry('https://registry.hub.docker.com' , 'dockerhub'){
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
+                    script {
+                        def registryUrl = "https://registry.hub.docker.com"
+                        sh "echo $PASSWORD | docker login -u $USER --password-stdin ${registryUrl}"
+
+                        // Push a imagem
                         dockerapp.push('latest')
                         dockerapp.push("${env.BUILD_ID}")
+
+                        // Logout após o push
+                        sh "docker logout ${registryUrl}"
                     }
                 }
             }
