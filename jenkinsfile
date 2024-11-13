@@ -7,7 +7,7 @@ pipeline {
                     // Referencia as credenciais salvas
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
                         // Executa o comando de login
-                        bat 'echo $PASSWORD | docker login -u $USER --password-stdin https://index.docker.io/v1/'
+                        bat 'echo %PASSWORD% | docker login -u %USER% --password-stdin https://index.docker.io/v1/'
                     }
                 }
             }
