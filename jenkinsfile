@@ -1,15 +1,35 @@
 pipeline {
-  agent any
+    agent any
 
-  stages {
-    stage('Docker Login') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerid', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          bat '''
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-          '''
+    stages {
+        stage('Build Image') {
+            steps {
+                script {
+                    // Construir a imagem Docker sem cache
+                    dockerapp = docker.build("gabriel/techshop:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
+                }
+            }
         }
-      }
+
+        stage('Push Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerid', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
+                    script {
+                        // Utilizar o URL padrão do Docker Hub
+                        def registryUrl = "docker.io"
+
+                        // Login no Docker Hub
+                        bat "echo %PASSWORD% | docker login -u %USER% --password-stdin ${registryUrl}"
+
+                        // Push das imagens para o Docker Hub
+                        dockerapp.push('latest')
+                        dockerapp.push("${env.BUILD_ID}")
+
+                        // Logout após o push
+                        bat "docker logout ${registryUrl}"
+                    }
+                }
+            }
+        }
     }
-  }
 }
