@@ -1,27 +1,13 @@
 pipeline {
     agent any
-
     stages {
-        stage('Build Image') {
+        stage('Docker Login') {
             steps {
                 script {
-                    dockerapp = docker.build("gabriel/techshop:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
-                }
-            }
-        }
-
-        stage('Push Image') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
-                    script {
-                        def registryUrl = "https://registry.hub.docker.com"
-                        // Utilize `bat` para executar o comando de login no Windows
-                        bat "echo %PASSWORD% | docker login -u %USER% --password-stdin ${registryUrl}"
-
-                        dockerapp.push('latest')
-                        dockerapp.push("${env.BUILD_ID}")
-
-                        bat "docker logout ${registryUrl}"
+                    // Referencia as credenciais salvas
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
+                        // Executa o comando de login
+                        sh 'echo $PASSWORD | docker login -u $USER --password-stdin https://index.docker.io/v1/'
                     }
                 }
             }
