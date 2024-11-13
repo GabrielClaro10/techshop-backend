@@ -12,17 +12,16 @@ pipeline {
 
         stage('Push Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
                     script {
                         def registryUrl = "https://registry.hub.docker.com"
-                        sh "echo $PASSWORD | docker login -u $USER --password-stdin ${registryUrl}"
+                        // Utilize `bat` para executar o comando de login no Windows
+                        bat "echo %PASSWORD% | docker login -u %USER% --password-stdin ${registryUrl}"
 
-                        // Push a imagem
                         dockerapp.push('latest')
                         dockerapp.push("${env.BUILD_ID}")
 
-                        // Logout após o push
-                        sh "docker logout ${registryUrl}"
+                        bat "docker logout ${registryUrl}"
                     }
                 }
             }
