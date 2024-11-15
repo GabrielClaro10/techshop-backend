@@ -1,46 +1,45 @@
 pipeline {
     agent any
-
     environment {
-        REGISTRY_URL = 'docker.io'
-        DOCKER_IMAGE_NAME = 'gabriel924/techshop'
+        DOCKER_IMAGE = "gabriel924/techshop"
+        REGISTRY_URL = "docker.io"
     }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
         stage('Build Image') {
             steps {
                 script {
-                    dockerapp = docker.build("${DOCKER_IMAGE_NAME}:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
+                    dockerapp = docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
                 }
             }
         }
-
-        stage('Run Tests') {
+        stage('Run Unit Tests') {
             steps {
-                script {
-                    echo 'Running tests...'
-                    sh 'docker run --rm ${DOCKER_IMAGE_NAME}:${env.BUILD_ID} php artisan test'
-                }
+                sh 'php artisan test'
             }
         }
-
         stage('Push Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerid', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
                     script {
                         bat "docker login -u %USER% -p %PASSWORD% ${REGISTRY_URL}"
-
                         docker.withRegistry("https://${REGISTRY_URL}", "dockerid") {
                             dockerapp.push("latest")
                             dockerapp.push("${env.BUILD_ID}")
                         }
                     }
+                }
+            }
+        }
+        stage('Deploy Container') {
+            steps {
+                script {
+                    sh 'docker stop techshop || true && docker rm techshop || true'
+                    sh "docker run -d --name techshop -p 8080:80 ${DOCKER_IMAGE}:${env.BUILD_ID}"
                 }
             }
         }
