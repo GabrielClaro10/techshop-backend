@@ -1,12 +1,31 @@
 pipeline {
     agent any
 
+    environment {
+        REGISTRY_URL = 'docker.io'
+        DOCKER_IMAGE_NAME = 'gabriel924/techshop'
+    }
+
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build Image') {
             steps {
                 script {
-                    // Construir a imagem Docker sem cache, usando o seu nome de usuário no Docker Hub
-                    dockerapp = docker.build("gabriel924/techshop:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
+                    dockerapp = docker.build("${DOCKER_IMAGE_NAME}:${env.BUILD_ID}", '--no-cache -f app/Dockerfile .')
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                script {
+                    echo 'Running tests...'
+                    sh 'docker run --rm ${DOCKER_IMAGE_NAME}:${env.BUILD_ID} php artisan test'
                 }
             }
         }
@@ -15,16 +34,11 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerid', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
                     script {
-                        def registry_url = "docker.io" // URL do Docker Hub
+                        bat "docker login -u %USER% -p %PASSWORD% ${REGISTRY_URL}"
 
-                        // Login no Docker Hub com as credenciais
-                        bat "docker login -u %USER% -p %PASSWORD% ${registry_url}"
-
-                        // Usar o docker.withRegistry para fazer push da imagem
-                        docker.withRegistry("https://${registry_url}", "dockerid") {
-                            // Push da imagem para o Docker Hub
-                            dockerapp.push("latest") // Envia a imagem com a tag "latest"
-                            dockerapp.push("${env.BUILD_ID}") // Envia a imagem com o ID da construção como tag
+                        docker.withRegistry("https://${REGISTRY_URL}", "dockerid") {
+                            dockerapp.push("latest")
+                            dockerapp.push("${env.BUILD_ID}")
                         }
                     }
                 }
